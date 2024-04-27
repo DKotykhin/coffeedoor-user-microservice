@@ -1,0 +1,50 @@
+import { Column, Entity, OneToOne } from 'typeorm';
+import { Exclude } from 'class-transformer';
+
+import { BaseEntity } from '../../database/base.entity';
+import { RoleTypes } from '../../database/db.enums';
+import { EmailConfirm } from '../../email-confirm/entities/email-confirm.entity';
+import { ResetPassword } from '../../password-reset/entities/reset-password.entity';
+
+@Entity()
+export class User extends BaseEntity {
+  @Column({ unique: true })
+  email: string;
+
+  @Column({ nullable: true })
+  userName: string;
+
+  @Column({ nullable: true })
+  @Exclude()
+  passwordHash: string;
+
+  @Column({ nullable: true })
+  address: string;
+
+  @Column({ nullable: true })
+  phoneNumber: string;
+
+  @Column({ nullable: true })
+  avatar: string;
+
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @Column({ type: 'enum', enum: RoleTypes, default: RoleTypes.USER })
+  role: RoleTypes;
+
+  @OneToOne(() => EmailConfirm, (emailConfirm) => emailConfirm.user, {
+    cascade: true,
+  })
+  emailConfirm: EmailConfirm;
+
+  @OneToOne(() => ResetPassword, (resetPassword) => resetPassword.user, {
+    cascade: true,
+  })
+  resetPassword: ResetPassword;
+
+  constructor(partial: Partial<User>) {
+    super(partial);
+    Object.assign(this, partial);
+  }
+}

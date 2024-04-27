@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package emailConfirm;
+
+import "google/protobuf/timestamp.proto";
+
+message EmailConfirm {
+  string id = 1;
+  string token = 2;
+  google.protobuf.Timestamp expiredAt = 3;
+  google.protobuf.Timestamp verifiedAt = 4;
+  User user = 5;
+}
+
+message User {
+  string id = 1;
+}
+message Id {
+  string id = 1;
+}
+message CreateRequest {
+  string userId = 1;
+  string token = 2;
+}
+message GetByTokenRequest {
+  string token = 1;
+}
+
+service EmailConfirmService {
+  rpc Create(CreateRequest) returns (EmailConfirm) {}
+  rpc GetByToken(GetByTokenRequest) returns (EmailConfirm) {}
+  rpc Verify(Id) returns (EmailConfirm) {}
+}
+
+// protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./ --ts_proto_opt=nestJs=true ./proto/emailConfirm.proto
