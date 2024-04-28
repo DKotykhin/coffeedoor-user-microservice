@@ -38,6 +38,12 @@ export class AuthController {
     return this.authService.confirmEmail(token);
   }
 
+  @GrpcMethod(AUTH_SERVICE_NAME, 'ResendEmail')
+  resendEmail({ email }: EmailDto) {
+    this.logger.log('Received ResendEmail request');
+    return this.authService.resendEmail(email);
+  }
+
   @GrpcMethod(AUTH_SERVICE_NAME, 'ResetPassword')
   resetPassword({ email }: EmailDto) {
     this.logger.log('Received ResetPassword request');

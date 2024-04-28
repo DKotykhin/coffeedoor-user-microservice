@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PasswordHashModule } from './password-hash/password-hash.module';
+import { MailSenderModule } from './mail-sender/mail-sender.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PasswordHashModule } from './password-hash/password-hash.module';
     AuthModule,
     UserModule,
     PasswordHashModule,
+    MailSenderModule,
   ],
   controllers: [],
   providers: [],

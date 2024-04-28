@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import { ErrorImplementation } from '../utils/error-implementation';
 import { UserService } from '../user/user.service';
 import { PasswordHashService } from '../password-hash/password-hash.service';
+import { MailSenderService } from '../mail-sender/mail-sender.service';
 
 import { EmailConfirm } from './entities/email-confirm.entity';
 import { ResetPassword } from './entities/reset-password.entity';
@@ -23,6 +24,7 @@ export class AuthService {
     private configService: ConfigService,
     private readonly userService: UserService,
     private readonly passwordHashService: PasswordHashService,
+    private readonly mailSenderService: MailSenderService,
   ) {}
 
   private cryptoToken(): string {
@@ -32,14 +34,34 @@ export class AuthService {
     return token;
   }
 
+  private emailConfirmation({ to, token }: { to: string; token: string }) {
+    return this.mailSenderService.sendMail({
+      to,
+      subject: 'Email confirmation',
+      html: `
+              <h2>Please, follow the link to confirm your email</h2>
+              <h4>If you don't try to login or register, ignore this mail</h4>
+              <hr/>
+              <br/>
+              <a href='${this.configService.get('FRONTEND_URL')}/confirm-email/${token}'>Link for email confirmation</a>
+            `,
+    });
+  }
+
   async signUp(signUpDto: SignUpRequest): Promise<User> {
     const { email, password, userName } = signUpDto;
     const candidate = await this.userService.getUserByEmail(email);
-    if (candidate) {
+    if (candidate && candidate.isVerified) {
       throw ErrorImplementation.badRequest(
         'User with this email already exists',
       );
     }
+    if (candidate && !candidate.isVerified) {
+      throw ErrorImplementation.badRequest('Email not confirmed');
+    }
+    const token = this.cryptoToken();
+    this.emailConfirmation({ to: email, token });
+
     const passwordHash = await this.passwordHashService.create(password);
     const user = await this.userService.create({
       email,
@@ -47,7 +69,6 @@ export class AuthService {
       userName,
     });
 
-    const token = this.cryptoToken();
     await this.emailConfirmRepository.save({
       user,
       token,
@@ -65,6 +86,14 @@ export class AuthService {
       throw ErrorImplementation.badRequest('Incorrect login or password');
     }
     await this.passwordHashService.compare(password, user.passwordHash);
+
+    if (!user.isVerified) {
+      if (user.emailConfirm?.expiredAt < new Date()) {
+        const token = this.cryptoToken();
+        this.emailConfirmation({ to: email, token });
+      }
+      throw ErrorImplementation.badRequest('Email not confirmed');
+    }
 
     return user;
   }
@@ -100,12 +129,49 @@ export class AuthService {
     };
   }
 
+  async resendEmail(email: string): Promise<StatusResponse> {
+    const user = await this.userService.getUserByEmail(email);
+    if (!user) {
+      throw ErrorImplementation.notFound('User not found');
+    }
+    if (user.isVerified) {
+      throw ErrorImplementation.badRequest('Email already confirmed');
+    }
+    if (user.emailConfirm?.expiredAt < new Date()) {
+      const token = this.cryptoToken();
+      this.emailConfirmation({ to: email, token });
+      await this.emailConfirmRepository.update(user.emailConfirm.id, {
+        token,
+        expiredAt: new Date(
+          new Date().getTime() + 1000 * 60 * 60 * 24,
+        ).toISOString(),
+      });
+    } else {
+      this.emailConfirmation({ to: email, token: user.emailConfirm.token });
+    }
+    return {
+      status: true,
+      message: 'Email confirmation link sent to your email',
+    };
+  }
+
   async resetPassword(email: string): Promise<StatusResponse> {
     const user = await this.userService.getUserByEmail(email);
     if (!user) {
       throw ErrorImplementation.notFound('User not found');
     }
     const token = this.cryptoToken();
+    this.mailSenderService.sendMail({
+      to: user.email,
+      subject: 'Reset password',
+      html: `
+                <h2>Please, follow the link to set new password</h2>
+                <h4>If you don't restore your password ignore this mail</h4>
+                <hr/>
+                <br/>
+                <a href='${this.configService.get('FRONTEND_URL')}/reset-password/${token}'>Link for email confirmation</a>
+              `,
+    });
     await this.resetPasswordRepository.save({
       user,
       token,

@@ -53,6 +53,8 @@ export interface AuthServiceClient {
 
   confirmEmail(request: Token): Observable<StatusResponse>;
 
+  resendEmail(request: Email): Observable<StatusResponse>;
+
   resetPassword(request: Email): Observable<StatusResponse>;
 
   setNewPassword(request: SetNewPasswordRequest): Observable<StatusResponse>;
@@ -65,6 +67,8 @@ export interface AuthServiceController {
 
   confirmEmail(request: Token): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
 
+  resendEmail(request: Email): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
+
   resetPassword(request: Email): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
 
   setNewPassword(request: SetNewPasswordRequest): Promise<StatusResponse> | Observable<StatusResponse> | StatusResponse;
@@ -72,7 +76,14 @@ export interface AuthServiceController {
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["signUp", "signIn", "confirmEmail", "resetPassword", "setNewPassword"];
+    const grpcMethods: string[] = [
+      "signUp",
+      "signIn",
+      "confirmEmail",
+      "resendEmail",
+      "resetPassword",
+      "setNewPassword",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);

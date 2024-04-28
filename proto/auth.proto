@@ -43,6 +43,7 @@ service AuthService {
   rpc SignUp(SignUpRequest) returns (User) {}
   rpc SignIn(SignInRequest) returns (User) {}
   rpc ConfirmEmail(Token) returns (StatusResponse) {}
+  rpc ResendEmail(Email) returns (StatusResponse) {}
   rpc ResetPassword(Email) returns (StatusResponse) {}
   rpc SetNewPassword(SetNewPasswordRequest) returns (StatusResponse) {}
 }
