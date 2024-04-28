@@ -7,6 +7,7 @@ import { join } from 'path';
 import { AppModule } from './app.module';
 import { USER_PACKAGE_NAME } from './user/user.pb';
 import { AUTH_PACKAGE_NAME } from './auth/auth.pb';
+import { HEALTH_CHECK_PACKAGE_NAME } from './health-check/health-check.pb';
 
 const logger = new Logger('main.ts');
 
@@ -20,10 +21,15 @@ async function bootstrap() {
   app.connectMicroservice({
     transport: Transport.GRPC,
     options: {
-      package: [USER_PACKAGE_NAME, AUTH_PACKAGE_NAME],
+      package: [
+        AUTH_PACKAGE_NAME,
+        USER_PACKAGE_NAME,
+        HEALTH_CHECK_PACKAGE_NAME,
+      ],
       protoPath: [
-        join(__dirname, '../proto/user.proto'),
         join(__dirname, '../proto/auth.proto'),
+        join(__dirname, '../proto/user.proto'),
+        join(__dirname, '../proto/health-check.proto'),
       ],
       url: URL,
     },

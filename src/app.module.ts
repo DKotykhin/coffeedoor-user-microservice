@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PasswordHashModule } from './password-hash/password-hash.module';
 import { MailSenderModule } from './mail-sender/mail-sender.module';
+import { HealthCheckModule } from './health-check/health-check.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { MailSenderModule } from './mail-sender/mail-sender.module';
     UserModule,
     PasswordHashModule,
     MailSenderModule,
+    HealthCheckModule,
   ],
   controllers: [],
   providers: [],

@@ -2,11 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
+import { UserService } from '../../user/user.service';
+import { PasswordHashService } from '../../password-hash/password-hash.service';
+import { MailSenderService } from '../../mail-sender/mail-sender.service';
 import { AuthService } from '../auth.service';
 import { EmailConfirm } from '../entities/email-confirm.entity';
 import { ResetPassword } from '../entities/reset-password.entity';
-import { UserService } from '../../user/user.service';
-import { PasswordHashService } from '../../password-hash/password-hash.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -36,7 +37,7 @@ describe('AuthService', () => {
           useValue: {},
         },
         {
-          provide: 'NOTIFICATION_SERVICE',
+          provide: MailSenderService,
           useValue: {},
         },
       ],
