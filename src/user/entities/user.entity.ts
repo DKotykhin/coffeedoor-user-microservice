@@ -3,8 +3,8 @@ import { Exclude } from 'class-transformer';
 
 import { BaseEntity } from '../../database/base.entity';
 import { RoleTypes } from '../../database/db.enums';
-import { EmailConfirm } from '../../email-confirm/entities/email-confirm.entity';
-import { ResetPassword } from '../../password-reset/entities/reset-password.entity';
+import { EmailConfirm } from '../../auth/entities/email-confirm.entity';
+import { ResetPassword } from '../../auth/entities/reset-password.entity';
 
 @Entity()
 export class User extends BaseEntity {

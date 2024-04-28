@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package auth;
+
+message User {
+  string id = 1;
+  string userName = 2;
+  string email = 3;
+  string role = 4;
+  bool isVerified = 5;
+  optional string avatar = 6;
+  optional string phoneNumber = 7;
+  optional string address = 8;
+}
+
+message Email {
+  string email = 1;
+}
+message Token {
+  string token = 1;
+}
+
+message SignUpRequest {
+  string userName = 1;
+  string email = 2;
+  string password = 3;
+}
+message SignInRequest {
+  string email = 1;
+  string password = 2;
+}
+message SetNewPasswordRequest {
+  string token = 1;
+  string password = 2;
+}
+
+message StatusResponse {
+  bool status = 1;
+  string message = 2;
+}
+
+service AuthService {
+  rpc SignUp(SignUpRequest) returns (User) {}
+  rpc SignIn(SignInRequest) returns (User) {}
+  rpc ConfirmEmail(Token) returns (StatusResponse) {}
+  rpc ResetPassword(Email) returns (StatusResponse) {}
+  rpc SetNewPassword(SetNewPasswordRequest) returns (StatusResponse) {}
+}
+
+// protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./ --ts_proto_opt=nestJs=true ./proto/auth.proto

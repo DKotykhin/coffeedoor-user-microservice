@@ -34,15 +34,6 @@ export interface PasswordRequest {
   password: string;
 }
 
-export interface CreateUserRequest {
-  userName: string;
-  email: string;
-  passwordHash: string;
-  address?: string | undefined;
-  phoneNumber?: string | undefined;
-  avatar?: string | undefined;
-}
-
 export interface UpdateUserRequest {
   id: string;
   userName?: string | undefined;
@@ -61,8 +52,6 @@ export interface UserServiceClient {
 
   getUserById(request: Id): Observable<User>;
 
-  createUser(request: CreateUserRequest): Observable<User>;
-
   updateUser(request: UpdateUserRequest): Observable<User>;
 
   deleteUser(request: Id): Observable<StatusResponse>;
@@ -76,8 +65,6 @@ export interface UserServiceController {
   getUserByEmail(request: Email): Promise<User> | Observable<User> | User;
 
   getUserById(request: Id): Promise<User> | Observable<User> | User;
-
-  createUser(request: CreateUserRequest): Promise<User> | Observable<User> | User;
 
   updateUser(request: UpdateUserRequest): Promise<User> | Observable<User> | User;
 
@@ -93,7 +80,6 @@ export function UserServiceControllerMethods() {
     const grpcMethods: string[] = [
       "getUserByEmail",
       "getUserById",
-      "createUser",
       "updateUser",
       "deleteUser",
       "confirmPassword",

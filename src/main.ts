@@ -6,8 +6,7 @@ import { join } from 'path';
 
 import { AppModule } from './app.module';
 import { USER_PACKAGE_NAME } from './user/user.pb';
-import { EMAIL_CONFIRM_PACKAGE_NAME } from './email-confirm/emailConfirm.pb';
-import { PASSWORD_RESET_PACKAGE_NAME } from './password-reset/passwordReset.pb';
+import { AUTH_PACKAGE_NAME } from './auth/auth.pb';
 
 const logger = new Logger('main.ts');
 
@@ -21,15 +20,10 @@ async function bootstrap() {
   app.connectMicroservice({
     transport: Transport.GRPC,
     options: {
-      package: [
-        EMAIL_CONFIRM_PACKAGE_NAME,
-        PASSWORD_RESET_PACKAGE_NAME,
-        USER_PACKAGE_NAME,
-      ],
+      package: [USER_PACKAGE_NAME, AUTH_PACKAGE_NAME],
       protoPath: [
-        join(__dirname, '../proto/emailConfirm.proto'),
-        join(__dirname, '../proto/passwordReset.proto'),
         join(__dirname, '../proto/user.proto'),
+        join(__dirname, '../proto/auth.proto'),
       ],
       url: URL,
     },

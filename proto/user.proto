@@ -29,15 +29,6 @@ message PasswordRequest {
   string password = 2;
 }
 
-message CreateUserRequest {
-  string userName = 1;
-  string email = 2;
-  string passwordHash = 3;
-  optional string address = 4;
-  optional string phoneNumber = 5;
-  optional string avatar = 6;
-}
-
 message UpdateUserRequest {
   string id = 1;
   optional string userName = 2;
@@ -52,7 +43,6 @@ message UpdateUserRequest {
 service UserService {
   rpc GetUserByEmail(Email) returns (User) {}
   rpc GetUserById(Id) returns (User) {}
-  rpc CreateUser(CreateUserRequest) returns (User) {}
   rpc UpdateUser(UpdateUserRequest) returns (User) {}
   rpc DeleteUser(Id) returns (StatusResponse) {}
   rpc ConfirmPassword(PasswordRequest) returns (StatusResponse) {}

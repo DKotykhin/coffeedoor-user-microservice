@@ -1,8 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 
-import { PasswordHash } from '../utils/passwordHash';
+import { PasswordHashService } from '../password-hash/password-hash.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -14,23 +15,27 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly entityManager: EntityManager,
+    private readonly passwordHashService: PasswordHashService,
   ) {}
 
   async getUserByEmail(email: string): Promise<User> {
-    return this.userRepository.findOneOrFail({ where: { email } });
+    const user = await this.userRepository.findOne({ where: { email } });
+    return user;
   }
 
   async getUserById(id: string): Promise<User> {
-    return this.userRepository.findOneOrFail({ where: { id } });
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new RpcException('User not found');
+    }
+    return user;
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
-      // const user = new User(createUserDto);
-      // return await this.entityManager.save(User, user);
       return await this.entityManager.save(User, createUserDto);
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new RpcException("Can't create user");
     }
   }
 
@@ -40,7 +45,7 @@ export class UserService {
         ...updateUserDto,
       });
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      throw new RpcException("Can't update user");
     }
   }
 
@@ -48,14 +53,14 @@ export class UserService {
     try {
       const result = await this.userRepository.delete(id);
       if (result.affected === 0) {
-        throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+        throw new RpcException('User not found');
       }
       return {
         status: true,
         message: `User id ${id} successfully deleted`,
       };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+      throw new RpcException("Can't delete user");
     }
   }
 
@@ -67,17 +72,13 @@ export class UserService {
     password: string;
   }): Promise<StatusResponse> {
     if (!password) {
-      throw new HttpException('Password is required', HttpStatus.BAD_REQUEST);
+      throw new RpcException('Password is required');
     }
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new RpcException('User not found');
     }
-    await PasswordHash.compare(
-      password,
-      user.passwordHash,
-      'Password not match',
-    );
+    await this.passwordHashService.compare(password, user.passwordHash);
     return {
       status: true,
       message: 'Password confirmed',
@@ -92,17 +93,14 @@ export class UserService {
     password: string;
   }): Promise<StatusResponse> {
     if (!password) {
-      throw new HttpException(
-        'New password is required',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new RpcException('New password is required');
     }
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new RpcException('User not found');
     }
-    await PasswordHash.same(password, user.passwordHash, 'The same password!');
-    const passwordHash = await PasswordHash.create(password);
+    await this.passwordHashService.same(password, user.passwordHash);
+    const passwordHash = await this.passwordHashService.create(password);
     user.passwordHash = passwordHash;
     await this.entityManager.save(User, user);
     return {

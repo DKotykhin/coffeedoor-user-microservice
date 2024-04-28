@@ -3,9 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 
 import { validate } from './utils/env.validator';
 import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { EmailConfirmModule } from './email-confirm/email-confirm.module';
-import { PasswordResetModule } from './password-reset/password-reset.module';
+import { PasswordHashModule } from './password-hash/password-hash.module';
 
 @Module({
   imports: [
@@ -15,9 +15,9 @@ import { PasswordResetModule } from './password-reset/password-reset.module';
       validate,
     }),
     DatabaseModule,
+    AuthModule,
     UserModule,
-    EmailConfirmModule,
-    PasswordResetModule,
+    PasswordHashModule,
   ],
   controllers: [],
   providers: [],

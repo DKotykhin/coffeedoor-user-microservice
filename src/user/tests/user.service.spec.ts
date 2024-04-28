@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EntityManager } from 'typeorm';
 
 import { UserService } from '../user.service';
+import { PasswordHashService } from '../../password-hash/password-hash.service';
 
 describe('UserService', () => {
   let service: UserService;
@@ -16,6 +17,10 @@ describe('UserService', () => {
         },
         {
           provide: EntityManager,
+          useValue: {},
+        },
+        {
+          provide: PasswordHashService,
           useValue: {},
         },
       ],
