@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
 import * as bcrypt from 'bcryptjs';
+
+import { ErrorImplementation } from '../utils/error-implementation';
 
 @Injectable()
 export class PasswordHashService {
@@ -10,7 +11,7 @@ export class PasswordHashService {
     const salt = await bcrypt.genSalt(this.index);
     const passwordHash = await bcrypt.hash(password, salt);
     if (!passwordHash) {
-      throw new RpcException("Can't create password hash");
+      throw ErrorImplementation.forbidden("Can't create password hash");
     }
     return passwordHash;
   }
@@ -18,7 +19,7 @@ export class PasswordHashService {
   async compare(password: string, passwordHash: string): Promise<boolean> {
     const isValidPass = await bcrypt.compare(password, passwordHash);
     if (!isValidPass) {
-      throw new RpcException('Password not match');
+      throw ErrorImplementation.badRequest('Password not match');
     }
     return isValidPass;
   }
@@ -26,7 +27,7 @@ export class PasswordHashService {
   async same(password: string, passwordHash: string): Promise<boolean> {
     const isValidPass = await bcrypt.compare(password, passwordHash);
     if (isValidPass) {
-      throw new RpcException('The same password!');
+      throw ErrorImplementation.badRequest('The same password!');
     }
     return isValidPass;
   }

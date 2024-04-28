@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 
 import { PasswordHashService } from '../password-hash/password-hash.service';
+import { RoleTypes } from '../database/db.enums';
+import { ErrorImplementation } from '../utils/error-implementation';
+
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { StatusResponse } from './user.pb';
+import { StatusResponse, UpdateUserRequest } from './user.pb';
 
 @Injectable()
 export class UserService {
@@ -26,7 +27,7 @@ export class UserService {
   async getUserById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
-      throw new RpcException('User not found');
+      throw ErrorImplementation.notFound('User not found');
     }
     return user;
   }
@@ -35,17 +36,18 @@ export class UserService {
     try {
       return await this.entityManager.save(User, createUserDto);
     } catch (error) {
-      throw new RpcException("Can't create user");
+      throw ErrorImplementation.badRequest("Can't create user");
     }
   }
 
-  async update(updateUserDto: UpdateUserDto): Promise<User> {
+  async update(updateUserDto: UpdateUserRequest): Promise<User> {
     try {
       return await this.entityManager.save(User, {
         ...updateUserDto,
+        role: updateUserDto.role as RoleTypes,
       });
     } catch (error) {
-      throw new RpcException("Can't update user");
+      throw ErrorImplementation.badRequest("Can't update user");
     }
   }
 
@@ -53,14 +55,14 @@ export class UserService {
     try {
       const result = await this.userRepository.delete(id);
       if (result.affected === 0) {
-        throw new RpcException('User not found');
+        throw ErrorImplementation.notFound('User not found');
       }
       return {
         status: true,
         message: `User id ${id} successfully deleted`,
       };
     } catch (error) {
-      throw new RpcException("Can't delete user");
+      throw ErrorImplementation.badRequest("Can't delete user");
     }
   }
 
@@ -72,11 +74,11 @@ export class UserService {
     password: string;
   }): Promise<StatusResponse> {
     if (!password) {
-      throw new RpcException('Password is required');
+      throw ErrorImplementation.badRequest('Password is required');
     }
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
-      throw new RpcException('User not found');
+      throw ErrorImplementation.notFound('User not found');
     }
     await this.passwordHashService.compare(password, user.passwordHash);
     return {
@@ -93,11 +95,11 @@ export class UserService {
     password: string;
   }): Promise<StatusResponse> {
     if (!password) {
-      throw new RpcException('New password is required');
+      throw ErrorImplementation.badRequest('New password is required');
     }
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) {
-      throw new RpcException('User not found');
+      throw ErrorImplementation.notFound('User not found');
     }
     await this.passwordHashService.same(password, user.passwordHash);
     const passwordHash = await this.passwordHashService.create(password);

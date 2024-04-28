@@ -2,11 +2,12 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { RpcException } from '@nestjs/microservices';
 import * as crypto from 'crypto';
 
+import { ErrorImplementation } from '../utils/error-implementation';
 import { UserService } from '../user/user.service';
 import { PasswordHashService } from '../password-hash/password-hash.service';
+
 import { EmailConfirm } from './entities/email-confirm.entity';
 import { ResetPassword } from './entities/reset-password.entity';
 import { SignUpRequest, StatusResponse, User } from './auth.pb';
@@ -26,7 +27,7 @@ export class AuthService {
 
   private cryptoToken(): string {
     const buffer = crypto.randomBytes(16);
-    if (!buffer) throw new RpcException('Token error');
+    if (!buffer) throw ErrorImplementation.badRequest('Token error');
     const token = buffer.toString('hex');
     return token;
   }
@@ -35,7 +36,9 @@ export class AuthService {
     const { email, password, userName } = signUpDto;
     const candidate = await this.userService.getUserByEmail(email);
     if (candidate) {
-      throw new RpcException('User with this email already exists');
+      throw ErrorImplementation.badRequest(
+        'User with this email already exists',
+      );
     }
     const passwordHash = await this.passwordHashService.create(password);
     const user = await this.userService.create({
@@ -59,7 +62,7 @@ export class AuthService {
   async signIn(email: string, password: string): Promise<User> {
     const user = await this.userService.getUserByEmail(email);
     if (!user) {
-      throw new RpcException('Incorrect login or password');
+      throw ErrorImplementation.badRequest('Incorrect login or password');
     }
     await this.passwordHashService.compare(password, user.passwordHash);
 
@@ -72,10 +75,10 @@ export class AuthService {
       relations: ['user'],
     });
     if (!emailConfirm) {
-      throw new RpcException('Invalid token');
+      throw ErrorImplementation.badRequest('Invalid token');
     }
     if (new Date() > new Date(emailConfirm.expiredAt)) {
-      throw new RpcException('Token expired');
+      throw ErrorImplementation.badRequest('Token expired');
     }
     try {
       await this.userService.update({
@@ -88,7 +91,7 @@ export class AuthService {
         expiredAt: null,
       });
     } catch (error) {
-      throw new RpcException('Error while confirming email');
+      throw ErrorImplementation.forbidden('Error while confirming email');
     }
 
     return {
@@ -100,7 +103,7 @@ export class AuthService {
   async resetPassword(email: string): Promise<StatusResponse> {
     const user = await this.userService.getUserByEmail(email);
     if (!user) {
-      throw new RpcException('User not found');
+      throw ErrorImplementation.notFound('User not found');
     }
     const token = this.cryptoToken();
     await this.resetPasswordRepository.save({
@@ -125,10 +128,10 @@ export class AuthService {
       relations: ['user'],
     });
     if (!resetPassword) {
-      throw new RpcException('Invalid token');
+      throw ErrorImplementation.badRequest('Invalid token');
     }
     if (new Date() > new Date(resetPassword.expiredAt)) {
-      throw new RpcException('Token expired');
+      throw ErrorImplementation.badRequest('Token expired');
     }
     try {
       const passwordHash = await this.passwordHashService.create(password);
@@ -142,7 +145,7 @@ export class AuthService {
         expiredAt: null,
       });
     } catch (error) {
-      throw new RpcException('Error while setting new password');
+      throw ErrorImplementation.forbidden('Error while setting new password');
     }
 
     return {
