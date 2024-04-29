@@ -19,10 +19,17 @@ export class UserService {
     private readonly passwordHashService: PasswordHashService,
   ) {}
 
-  async getUserByEmail(email: string): Promise<User> {
+  async getUserByEmailWithRelations(email: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { email },
       relations: ['emailConfirm', 'resetPassword'],
+    });
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { email },
     });
     return user;
   }

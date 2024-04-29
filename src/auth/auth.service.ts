@@ -50,7 +50,7 @@ export class AuthService {
 
   async signUp(signUpDto: SignUpRequest): Promise<User> {
     const { email, password, userName } = signUpDto;
-    const candidate = await this.userService.getUserByEmail(email);
+    const candidate = await this.userService.getUserByEmailWithRelations(email);
     if (candidate && candidate.isVerified) {
       throw ErrorImplementation.badRequest(
         'User with this email already exists',
@@ -81,7 +81,7 @@ export class AuthService {
   }
 
   async signIn(email: string, password: string): Promise<User> {
-    const user = await this.userService.getUserByEmail(email);
+    const user = await this.userService.getUserByEmailWithRelations(email);
     if (!user) {
       throw ErrorImplementation.badRequest('Incorrect login or password');
     }
@@ -130,7 +130,7 @@ export class AuthService {
   }
 
   async resendEmail(email: string): Promise<StatusResponse> {
-    const user = await this.userService.getUserByEmail(email);
+    const user = await this.userService.getUserByEmailWithRelations(email);
     if (!user) {
       throw ErrorImplementation.notFound('User not found');
     }
@@ -156,7 +156,7 @@ export class AuthService {
   }
 
   async resetPassword(email: string): Promise<StatusResponse> {
-    const user = await this.userService.getUserByEmail(email);
+    const user = await this.userService.getUserByEmailWithRelations(email);
     if (!user) {
       throw ErrorImplementation.notFound('User not found');
     }
