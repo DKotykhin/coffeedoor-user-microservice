@@ -68,14 +68,18 @@ export class AuthService {
       passwordHash,
       userName,
     });
-
-    await this.emailConfirmRepository.save({
-      user,
-      token,
-      expiredAt: new Date(
-        new Date().getTime() + 1000 * 60 * 60 * 24,
-      ).toISOString(),
-    });
+    try {
+      await this.emailConfirmRepository.save({
+        user,
+        token,
+        expiredAt: new Date(
+          new Date().getTime() + 1000 * 60 * 60 * 24,
+        ).toISOString(),
+      });
+    } catch (error) {
+      this.logger.error(error.message);
+      throw ErrorImplementation.forbidden('Error while creating email confirm');
+    }
 
     return user;
   }
@@ -120,6 +124,7 @@ export class AuthService {
         expiredAt: null,
       });
     } catch (error) {
+      this.logger.error(error.message);
       throw ErrorImplementation.forbidden('Error while confirming email');
     }
 
@@ -172,13 +177,18 @@ export class AuthService {
                 <a href='${this.configService.get('FRONTEND_URL')}/reset-password/${token}'>Link for email confirmation</a>
               `,
     });
-    await this.resetPasswordRepository.save({
-      user,
-      token,
-      expiredAt: new Date(
-        new Date().getTime() + 1000 * 60 * 60 * 24,
-      ).toISOString(),
-    });
+    try {
+      await this.resetPasswordRepository.save({
+        user,
+        token,
+        expiredAt: new Date(
+          new Date().getTime() + 1000 * 60 * 60 * 24,
+        ).toISOString(),
+      });
+    } catch (error) {
+      this.logger.error(error.message);
+      throw ErrorImplementation.forbidden('Error while resetting password');
+    }
     return {
       status: true,
       message: 'Password reset link sent to your email',
@@ -211,6 +221,7 @@ export class AuthService {
         expiredAt: null,
       });
     } catch (error) {
+      this.logger.error(error.message);
       throw ErrorImplementation.forbidden('Error while setting new password');
     }
 

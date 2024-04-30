@@ -11,7 +11,12 @@ import { TranslateHttpToGrpcExceptionFilter } from '../utils/error-translate';
 import { EmailDto, PasswordDto } from '../auth/dto/auth.dto';
 
 import { UserService } from './user.service';
-import { USER_SERVICE_NAME, UserServiceControllerMethods } from './user.pb';
+import {
+  StatusResponse,
+  USER_SERVICE_NAME,
+  User,
+  UserServiceControllerMethods,
+} from './user.pb';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @UserServiceControllerMethods()
@@ -23,25 +28,25 @@ export class UserController {
   protected readonly logger = new Logger(UserController.name);
 
   @GrpcMethod(USER_SERVICE_NAME, 'GetUserByEmail')
-  getUserByEmail({ email }: EmailDto) {
+  getUserByEmail({ email }: EmailDto): Promise<User> {
     this.logger.log('Received GetUserByEmail request');
     return this.userService.getUserByEmail(email);
   }
 
   @GrpcMethod(USER_SERVICE_NAME, 'GetUserById')
-  getUserById({ id }: { id: string }) {
+  getUserById({ id }: { id: string }): Promise<User> {
     this.logger.log('Received GetUserById request');
     return this.userService.getUserById(id);
   }
 
   @GrpcMethod(USER_SERVICE_NAME, 'UpdateUser')
-  updateUser(updateUserRequest: UpdateUserDto) {
+  updateUser(updateUserRequest: UpdateUserDto): Promise<User> {
     this.logger.log('Received UpdateUser request');
     return this.userService.update(updateUserRequest);
   }
 
   @GrpcMethod(USER_SERVICE_NAME, 'DeleteUser')
-  deleteUser({ id }: { id: string }) {
+  deleteUser({ id }: { id: string }): Promise<StatusResponse> {
     this.logger.log('Received DeleteUser request');
     return this.userService.remove(id);
   }
@@ -53,7 +58,7 @@ export class UserController {
   }: {
     id: string;
     password: PasswordDto['password'];
-  }) {
+  }): Promise<StatusResponse> {
     this.logger.log('Received ConfirmPassword request');
     return this.userService.confirmPassword({ id, password });
   }
@@ -65,7 +70,7 @@ export class UserController {
   }: {
     id: string;
     password: PasswordDto['password'];
-  }) {
+  }): Promise<StatusResponse> {
     this.logger.log('Received ChangePassword request');
     return this.userService.changePassword({ id, password });
   }

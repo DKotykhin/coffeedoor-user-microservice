@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 
@@ -18,6 +18,7 @@ export class UserService {
     private readonly entityManager: EntityManager,
     private readonly passwordHashService: PasswordHashService,
   ) {}
+  protected readonly logger = new Logger(UserService.name);
 
   async getUserByEmailWithRelations(email: string): Promise<User> {
     const user = await this.userRepository.findOne({
@@ -46,6 +47,7 @@ export class UserService {
     try {
       return await this.entityManager.save(User, createUserDto);
     } catch (error) {
+      this.logger.error(error.message);
       throw ErrorImplementation.badRequest("Can't create user");
     }
   }
@@ -57,6 +59,7 @@ export class UserService {
         role: updateUserDto.role as RoleTypes,
       });
     } catch (error) {
+      this.logger.error(error.message);
       throw ErrorImplementation.badRequest("Can't update user");
     }
   }
@@ -72,6 +75,7 @@ export class UserService {
         message: `User id ${id} successfully deleted`,
       };
     } catch (error) {
+      this.logger.error(error.message);
       throw ErrorImplementation.badRequest("Can't delete user");
     }
   }
@@ -111,10 +115,17 @@ export class UserService {
     if (!user) {
       throw ErrorImplementation.notFound('User not found');
     }
-    await this.passwordHashService.same(password, user.passwordHash);
-    const passwordHash = await this.passwordHashService.create(password);
-    user.passwordHash = passwordHash;
-    await this.entityManager.save(User, user);
+
+    try {
+      await this.passwordHashService.same(password, user.passwordHash);
+      const passwordHash = await this.passwordHashService.create(password);
+      user.passwordHash = passwordHash;
+      await this.entityManager.save(User, user);
+    } catch (error) {
+      this.logger.error(error.message);
+      throw ErrorImplementation.badRequest(error.message);
+    }
+
     return {
       status: true,
       message: 'Password successfully changed',
