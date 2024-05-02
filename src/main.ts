@@ -36,6 +36,6 @@ async function bootstrap() {
   });
   await app.startAllMicroservices();
 
-  logger.log('Notification microservice is running on ' + URL);
+  logger.log('User microservice is running on ' + URL);
 }
 bootstrap();
