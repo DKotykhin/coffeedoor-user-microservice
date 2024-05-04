@@ -1,7 +1,9 @@
 services:
-  app:
+  user-app:
     container_name: user_microservice
-    build: .
+    build:
+      context: .
+      target: dev
     ports:
       - "5003:5003"
     depends_on:
@@ -12,7 +14,6 @@ services:
   user_postgres_db:
     container_name: postgres-user_db
     image: postgres:latest
-    restart: always
     ports:
       - "9903:5432"
     env_file:
@@ -23,7 +24,6 @@ services:
   adminer:
     container_name: adminer-user_db
     image: adminer
-    restart: always
     ports:
       - 8803:8080
 
