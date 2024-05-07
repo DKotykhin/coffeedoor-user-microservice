@@ -28,11 +28,19 @@ export class UserService {
     return user;
   }
 
-  async getUserByEmail(email: string): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: { email },
-    });
-    return user;
+  async getUserByEmail(email: string): Promise<Partial<User>> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { email },
+      });
+      if (!user) {
+        throw ErrorImplementation.notFound('User not found');
+      }
+      return user;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw ErrorImplementation.badRequest(error.message);
+    }
   }
 
   async getUserById(id: string): Promise<User> {
@@ -54,13 +62,17 @@ export class UserService {
 
   async update(updateUserDto: UpdateUserRequest): Promise<User> {
     try {
-      return await this.entityManager.save(User, {
+      const updatedUser = await this.userRepository.preload({
         ...updateUserDto,
         role: updateUserDto.role as RoleTypes,
       });
+      if (!updatedUser) {
+        throw ErrorImplementation.notFound('User not found');
+      }
+      return await this.userRepository.save(updatedUser);
     } catch (error) {
       this.logger.error(error.message);
-      throw ErrorImplementation.badRequest("Can't update user");
+      throw ErrorImplementation.badRequest(error.message);
     }
   }
 

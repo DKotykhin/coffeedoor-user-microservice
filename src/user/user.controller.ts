@@ -1,7 +1,9 @@
 import {
+  ClassSerializerInterceptor,
   Controller,
   Logger,
   UseFilters,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -21,6 +23,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @UserServiceControllerMethods()
 @Controller()
+@UseInterceptors(ClassSerializerInterceptor)
 @UsePipes(new ValidationPipe({ transform: true }))
 @UseFilters(new TranslateHttpToGrpcExceptionFilter())
 export class UserController {
@@ -28,7 +31,7 @@ export class UserController {
   protected readonly logger = new Logger(UserController.name);
 
   @GrpcMethod(USER_SERVICE_NAME, 'GetUserByEmail')
-  getUserByEmail({ email }: EmailDto): Promise<User> {
+  getUserByEmail({ email }: EmailDto): Promise<Partial<User>> {
     this.logger.log('Received GetUserByEmail request');
     return this.userService.getUserByEmail(email);
   }
