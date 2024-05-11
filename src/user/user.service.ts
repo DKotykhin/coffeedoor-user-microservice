@@ -39,7 +39,10 @@ export class UserService {
       return user;
     } catch (error) {
       this.logger.error(error.message);
-      throw ErrorImplementation.badRequest(error.message);
+      throw new ErrorImplementation({
+        message: error?.message,
+        code: error.error?.code || 13,
+      });
     }
   }
 
@@ -72,7 +75,10 @@ export class UserService {
       return await this.userRepository.save(updatedUser);
     } catch (error) {
       this.logger.error(error.message);
-      throw ErrorImplementation.badRequest(error.message);
+      throw new ErrorImplementation({
+        message: error?.message,
+        code: error.error?.code || 13,
+      });
     }
   }
 
@@ -88,7 +94,10 @@ export class UserService {
       };
     } catch (error) {
       this.logger.error(error.message);
-      throw ErrorImplementation.badRequest("Can't delete user");
+      throw new ErrorImplementation({
+        message: error?.message,
+        code: error.error?.code || 13,
+      });
     }
   }
 
