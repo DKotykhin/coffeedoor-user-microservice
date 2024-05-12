@@ -6,7 +6,6 @@ import { PasswordHashService } from '../password-hash/password-hash.service';
 import { RoleTypes } from '../database/db.enums';
 import { ErrorImplementation } from '../utils/error-implementation';
 
-import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { StatusResponse, UpdateUserRequest } from './user.pb';
 
@@ -62,9 +61,9 @@ export class UserService {
     }
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUser: Partial<User>): Promise<User> {
     try {
-      return await this.entityManager.save(User, createUserDto);
+      return await this.entityManager.save(User, createUser);
     } catch (error) {
       this.logger.error(error.message);
       throw ErrorImplementation.badRequest("Can't create user");

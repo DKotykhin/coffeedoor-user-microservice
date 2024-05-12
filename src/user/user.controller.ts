@@ -8,16 +8,16 @@ import {
 } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 
-import { EmailDto, PasswordDto } from '../auth/dto/auth.dto';
-
 import { UserService } from './user.service';
 import {
+  Email,
+  PasswordRequest,
   StatusResponse,
   USER_SERVICE_NAME,
+  UpdateUserRequest,
   User,
   UserServiceControllerMethods,
 } from './user.pb';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @UserServiceControllerMethods()
 @Controller()
@@ -28,7 +28,7 @@ export class UserController {
   protected readonly logger = new Logger(UserController.name);
 
   @GrpcMethod(USER_SERVICE_NAME, 'GetUserByEmail')
-  getUserByEmail({ email }: EmailDto): Promise<Partial<User>> {
+  getUserByEmail({ email }: Email): Promise<Partial<User>> {
     this.logger.log('Received GetUserByEmail request');
     return this.userService.getUserByEmail(email);
   }
@@ -40,7 +40,7 @@ export class UserController {
   }
 
   @GrpcMethod(USER_SERVICE_NAME, 'UpdateUser')
-  updateUser(updateUserRequest: UpdateUserDto): Promise<User> {
+  updateUser(updateUserRequest: UpdateUserRequest): Promise<User> {
     this.logger.log('Received UpdateUser request');
     return this.userService.update(updateUserRequest);
   }
@@ -52,25 +52,13 @@ export class UserController {
   }
 
   @GrpcMethod(USER_SERVICE_NAME, 'ConfirmPassword')
-  confirmPassword({
-    id,
-    password,
-  }: {
-    id: string;
-    password: PasswordDto['password'];
-  }): Promise<StatusResponse> {
+  confirmPassword({ id, password }: PasswordRequest): Promise<StatusResponse> {
     this.logger.log('Received ConfirmPassword request');
     return this.userService.confirmPassword({ id, password });
   }
 
   @GrpcMethod(USER_SERVICE_NAME, 'ChangePassword')
-  changePassword({
-    id,
-    password,
-  }: {
-    id: string;
-    password: PasswordDto['password'];
-  }): Promise<StatusResponse> {
+  changePassword({ id, password }: PasswordRequest): Promise<StatusResponse> {
     this.logger.log('Received ChangePassword request');
     return this.userService.changePassword({ id, password });
   }
