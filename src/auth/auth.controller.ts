@@ -1,13 +1,6 @@
-import {
-  Controller,
-  Logger,
-  UseFilters,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 
-import { TranslateHttpToGrpcExceptionFilter } from '../utils/error-translate';
 import { AuthService } from './auth.service';
 import {
   AUTH_SERVICE_NAME,
@@ -20,7 +13,6 @@ import { EmailDto, PasswordDto, SignInDto, SignUpDto } from './dto/auth.dto';
 @AuthServiceControllerMethods()
 @Controller()
 @UsePipes(new ValidationPipe({ transform: true }))
-@UseFilters(new TranslateHttpToGrpcExceptionFilter())
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   protected readonly logger = new Logger(AuthController.name);

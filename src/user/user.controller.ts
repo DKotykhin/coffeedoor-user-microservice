@@ -2,14 +2,12 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Logger,
-  UseFilters,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 
-import { TranslateHttpToGrpcExceptionFilter } from '../utils/error-translate';
 import { EmailDto, PasswordDto } from '../auth/dto/auth.dto';
 
 import { UserService } from './user.service';
@@ -25,7 +23,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 @UsePipes(new ValidationPipe({ transform: true }))
-@UseFilters(new TranslateHttpToGrpcExceptionFilter())
 export class UserController {
   constructor(private readonly userService: UserService) {}
   protected readonly logger = new Logger(UserController.name);

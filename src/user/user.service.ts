@@ -40,18 +40,26 @@ export class UserService {
     } catch (error) {
       this.logger.error(error.message);
       throw new ErrorImplementation({
-        message: error?.message,
+        message: error.message,
         code: error.error?.code || 13,
       });
     }
   }
 
   async getUserById(id: string): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) {
-      throw ErrorImplementation.notFound('User not found');
+    try {
+      const user = await this.userRepository.findOne({ where: { id } });
+      if (!user) {
+        throw ErrorImplementation.notFound('User not found');
+      }
+      return user;
+    } catch (error) {
+      this.logger.error(error.message);
+      throw new ErrorImplementation({
+        message: error.message,
+        code: error.error?.code || 13,
+      });
     }
-    return user;
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -76,7 +84,7 @@ export class UserService {
     } catch (error) {
       this.logger.error(error.message);
       throw new ErrorImplementation({
-        message: error?.message,
+        message: error.message,
         code: error.error?.code || 13,
       });
     }
@@ -95,7 +103,7 @@ export class UserService {
     } catch (error) {
       this.logger.error(error.message);
       throw new ErrorImplementation({
-        message: error?.message,
+        message: error.message,
         code: error.error?.code || 13,
       });
     }
@@ -136,7 +144,6 @@ export class UserService {
     if (!user) {
       throw ErrorImplementation.notFound('User not found');
     }
-
     try {
       await this.passwordHashService.same(password, user.passwordHash);
       const passwordHash = await this.passwordHashService.create(password);
@@ -146,7 +153,6 @@ export class UserService {
       this.logger.error(error.message);
       throw ErrorImplementation.badRequest(error.message);
     }
-
     return {
       status: true,
       message: 'Password successfully changed',
