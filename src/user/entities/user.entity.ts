@@ -1,5 +1,4 @@
 import { Column, Entity, OneToOne } from 'typeorm';
-import { Exclude } from 'class-transformer';
 
 import { BaseEntity } from '../../database/base.entity';
 import { RoleTypes } from '../../database/db.enums';
@@ -15,7 +14,6 @@ export class User extends BaseEntity {
   userName: string;
 
   @Column({ nullable: true })
-  @Exclude()
   passwordHash: string;
 
   @Column({ nullable: true })
@@ -42,9 +40,4 @@ export class User extends BaseEntity {
     cascade: true,
   })
   resetPassword: ResetPassword;
-
-  constructor(partial: Partial<User>) {
-    super(partial);
-    Object.assign(this, partial);
-  }
 }

@@ -27,7 +27,7 @@ export class UserService {
     return user;
   }
 
-  async getUserByEmail(email: string): Promise<Partial<User>> {
+  async getUserByEmail(email: string): Promise<User> {
     try {
       const user = await this.userRepository.findOne({
         where: { email },

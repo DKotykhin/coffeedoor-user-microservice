@@ -6,11 +6,13 @@ message User {
   string id = 1;
   string userName = 2;
   string email = 3;
-  string role = 4;
-  bool isVerified = 5;
-  optional string avatar = 6;
-  optional string phoneNumber = 7;
-  optional string address = 8;
+  string address = 4;
+  string phoneNumber = 5;
+  string avatar = 6;
+  bool isVerified = 7;
+  string role = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
 }
 
 message Email {

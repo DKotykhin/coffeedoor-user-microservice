@@ -1,11 +1,4 @@
-import {
-  ClassSerializerInterceptor,
-  Controller,
-  Logger,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 
 import { UserService } from './user.service';
@@ -21,14 +14,12 @@ import {
 
 @UserServiceControllerMethods()
 @Controller()
-@UseInterceptors(ClassSerializerInterceptor)
-@UsePipes(new ValidationPipe({ transform: true }))
 export class UserController {
   constructor(private readonly userService: UserService) {}
   protected readonly logger = new Logger(UserController.name);
 
   @GrpcMethod(USER_SERVICE_NAME, 'GetUserByEmail')
-  getUserByEmail({ email }: Email): Promise<Partial<User>> {
+  getUserByEmail({ email }: Email): Promise<User> {
     this.logger.log('Received GetUserByEmail request');
     return this.userService.getUserByEmail(email);
   }
