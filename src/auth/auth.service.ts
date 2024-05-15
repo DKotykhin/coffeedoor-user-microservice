@@ -72,9 +72,7 @@ export class AuthService {
       await this.emailConfirmRepository.save({
         user,
         token,
-        expiredAt: new Date(
-          new Date().getTime() + 1000 * 60 * 60 * 24,
-        ).toISOString(),
+        expiredAt: new Date(Date.now() + 1000 * 60 * 60),
       });
     } catch (error) {
       this.logger.error(error.message);
@@ -147,9 +145,7 @@ export class AuthService {
       this.emailConfirmation({ to: email, token });
       await this.emailConfirmRepository.update(user.emailConfirm.id, {
         token,
-        expiredAt: new Date(
-          new Date().getTime() + 1000 * 60 * 60 * 24,
-        ).toISOString(),
+        expiredAt: new Date(Date.now() + 1000 * 60 * 60),
       });
     } else {
       this.emailConfirmation({ to: email, token: user.emailConfirm.token });
@@ -165,29 +161,47 @@ export class AuthService {
     if (!user) {
       throw ErrorImplementation.notFound('User not found');
     }
-    const token = this.cryptoToken();
-    this.mailSenderService.sendMail({
-      to: user.email,
-      subject: 'Reset password',
-      html: `
+    if (!user.resetPassword?.id || user.resetPassword?.expiredAt < new Date()) {
+      const token = this.cryptoToken();
+      this.mailSenderService.sendMail({
+        to: user.email,
+        subject: 'Reset password',
+        html: `
                 <h2>Please, follow the link to set new password</h2>
                 <h4>If you don't restore your password ignore this mail</h4>
                 <hr/>
                 <br/>
                 <a href='${this.configService.get('FRONTEND_URL')}/reset-password/${token}'>Link for email confirmation</a>
               `,
-    });
-    try {
-      await this.resetPasswordRepository.save({
-        user,
-        token,
-        expiredAt: new Date(
-          new Date().getTime() + 1000 * 60 * 60 * 24,
-        ).toISOString(),
       });
-    } catch (error) {
-      this.logger.error(error.message);
-      throw ErrorImplementation.forbidden('Error while resetting password');
+      try {
+        await this.resetPasswordRepository
+          .createQueryBuilder()
+          .insert()
+          .values({
+            token,
+            expiredAt: new Date(Date.now() + 1000 * 60 * 60),
+            user,
+          })
+          .orUpdate(['token', 'expiredAt'], ['userId'])
+          .execute();
+      } catch (error) {
+        this.logger.error(error.message);
+        throw ErrorImplementation.forbidden('Error while resetting password');
+      }
+    } else {
+      this.mailSenderService.sendMail({
+        to: user.email,
+        subject: 'Reset password',
+        html: `
+                <h2>Please, follow the link to set new password</h2>
+                <h4>!Repeated letter!</h4>
+                <h4>If you don't restore your password ignore this mail</h4>
+                <hr/>
+                <br/>
+                <a href='${this.configService.get('FRONTEND_URL')}/reset-password/${user.resetPassword.token}'>Link for email confirmation</a>
+              `,
+      });
     }
     return {
       status: true,
