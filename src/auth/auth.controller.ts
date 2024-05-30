@@ -29,7 +29,7 @@ export class AuthController {
   @GrpcMethod(AUTH_SERVICE_NAME, 'SignIn')
   signIn(signInRequest: SignInRequest): Promise<User> {
     this.logger.log('Received SignInRequest request');
-    return this.authService.signIn(signInRequest.email, signInRequest.password);
+    return this.authService.signIn(signInRequest);
   }
 
   @GrpcMethod(AUTH_SERVICE_NAME, 'ConfirmEmail')

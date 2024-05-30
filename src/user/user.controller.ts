@@ -43,14 +43,14 @@ export class UserController {
   }
 
   @GrpcMethod(USER_SERVICE_NAME, 'ConfirmPassword')
-  confirmPassword({ id, password }: PasswordRequest): Promise<StatusResponse> {
+  confirmPassword(passwordRequest: PasswordRequest): Promise<StatusResponse> {
     this.logger.log('Received ConfirmPassword request');
-    return this.userService.confirmPassword({ id, password });
+    return this.userService.confirmPassword(passwordRequest);
   }
 
   @GrpcMethod(USER_SERVICE_NAME, 'ChangePassword')
-  changePassword({ id, password }: PasswordRequest): Promise<StatusResponse> {
+  changePassword(passwordRequest: PasswordRequest): Promise<StatusResponse> {
     this.logger.log('Received ChangePassword request');
-    return this.userService.changePassword({ id, password });
+    return this.userService.changePassword(passwordRequest);
   }
 }

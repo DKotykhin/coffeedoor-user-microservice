@@ -83,7 +83,13 @@ export class AuthService {
     return user;
   }
 
-  async signIn(email: string, password: string): Promise<User> {
+  async signIn({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }): Promise<User> {
     const user = await this.userService.getUserByEmailWithRelations(email);
     if (!user) {
       throw ErrorImplementation.badRequest('Incorrect login or password');
