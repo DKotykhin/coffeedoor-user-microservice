@@ -7,7 +7,7 @@ import { RoleTypes } from '../database/db.enums';
 import { ErrorImplementation } from '../utils/error-implementation';
 
 import { User } from './entities/user.entity';
-import { StatusResponse, UpdateUserRequest } from './user.pb';
+import { PasswordRequest, StatusResponse, UpdateUserRequest } from './user.pb';
 
 @Injectable()
 export class UserService {
@@ -111,10 +111,7 @@ export class UserService {
   async confirmPassword({
     id,
     password,
-  }: {
-    id: string;
-    password: string;
-  }): Promise<StatusResponse> {
+  }: PasswordRequest): Promise<StatusResponse> {
     if (!password) {
       throw ErrorImplementation.badRequest('Password is required');
     }
@@ -132,10 +129,7 @@ export class UserService {
   async changePassword({
     id,
     password,
-  }: {
-    id: string;
-    password: string;
-  }): Promise<StatusResponse> {
+  }: PasswordRequest): Promise<StatusResponse> {
     if (!password) {
       throw ErrorImplementation.badRequest('New password is required');
     }

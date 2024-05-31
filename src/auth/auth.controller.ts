@@ -10,6 +10,7 @@ import {
   SignInRequest,
   SignUpRequest,
   StatusResponse,
+  Token,
   User,
 } from './auth.pb';
 
@@ -33,7 +34,7 @@ export class AuthController {
   }
 
   @GrpcMethod(AUTH_SERVICE_NAME, 'ConfirmEmail')
-  confirmEmail({ token }: { token: string }): Promise<StatusResponse> {
+  confirmEmail({ token }: Token): Promise<StatusResponse> {
     this.logger.log('Received ConfirmEmail request');
     return this.authService.confirmEmail(token);
   }
@@ -51,11 +52,10 @@ export class AuthController {
   }
 
   @GrpcMethod(AUTH_SERVICE_NAME, 'SetNewPassword')
-  setNewPassword({
-    token,
-    password,
-  }: SetNewPasswordRequest): Promise<StatusResponse> {
+  setNewPassword(
+    setNewPasswordRequest: SetNewPasswordRequest,
+  ): Promise<StatusResponse> {
     this.logger.log('Received SetNewPassword request');
-    return this.authService.setNewPassword(token, password);
+    return this.authService.setNewPassword(setNewPasswordRequest);
   }
 }

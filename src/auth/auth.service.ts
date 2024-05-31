@@ -11,7 +11,12 @@ import { MailSenderService } from '../mail-sender/mail-sender.service';
 
 import { EmailConfirm } from './entities/email-confirm.entity';
 import { ResetPassword } from './entities/reset-password.entity';
-import { SignUpRequest, StatusResponse, User } from './auth.pb';
+import {
+  SetNewPasswordRequest,
+  SignUpRequest,
+  StatusResponse,
+  User,
+} from './auth.pb';
 
 @Injectable()
 export class AuthService {
@@ -217,10 +222,10 @@ export class AuthService {
     };
   }
 
-  async setNewPassword(
-    token: string,
-    password: string,
-  ): Promise<StatusResponse> {
+  async setNewPassword({
+    token,
+    password,
+  }: SetNewPasswordRequest): Promise<StatusResponse> {
     const resetPassword = await this.resetPasswordRepository.findOne({
       where: { token },
       relations: ['user'],
