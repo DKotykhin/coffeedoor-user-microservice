@@ -7,11 +7,11 @@ services:
     ports:
       - "5003:5003"
     depends_on:
-      - user_postgres_db
+      - user-postgres-db
     env_file:
       - .env.stage.docker
 
-  user_postgres_db:
+  user-postgres-db:
     container_name: postgres-user_db
     image: postgres:latest
     ports:
